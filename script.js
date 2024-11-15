@@ -112,3 +112,43 @@ function dogJump(e) {
         dogImg.src = "./images/sashaStand500px.png"
     }
 }
+
+function spawnObstacle() {
+    if (gameOver) {return;}
+
+    let obstacle = {
+        img : null,
+        x : obstacleX,
+        y : obstacleY,
+        width : null,
+        height : obstacleHeight
+    }
+
+    let obstacleSpawnRate = Math.random();
+    if (obstacleSpawnRate > .90) {      //10% chance
+        obstacle.img = obstacleCatImg;
+        obstacle.width = obstacleCatWidth;
+        obstacleArray.push(obstacle);
+    }
+    else if (obstacleSpawnRate > .70) {     //30% chance
+        obstacle.img = obstacleTreeLargeImg;
+        obstacle.width = obstacleTreeLargeWidth;
+        obstacleArray.push(obstacle);
+    }
+    else if (obstacleSpawnRate > .50) {       //50% chance
+        obstacle.img = obstacleTreeSmallImg;
+        obstacle.width = obstacleTreeSmallWidth;
+        obstacleArray.push(obstacle);
+    }
+
+    if (obstacleArray.length > 5) {
+        obstacleArray.shift();
+    }
+}
+
+function detectCollision(a, b) {
+    return a.x < b.x + b.width &&
+           a.x + a.width > b.x &&
+           a.y < b.y + b.height &&
+           a.y + a.height > b.y;
+}
