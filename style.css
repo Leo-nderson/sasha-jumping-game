@@ -1,0 +1,11 @@
+body {
+    font-family: 'Courier New', Courier, monospace;
+    text-align: center;
+}
+
+#board {
+    background-color:#e0f0f6;
+    background-image: url(./images/clouds2.png);
+    background-repeat: repeat-x;
+    border-bottom: 1px solid #ffc8dc;
+}
