@@ -41,3 +41,29 @@ let gravity = .4;
 let gameOver = false;
 let score = 0;
 
+window.onload = function() {
+    board = document.getElementById("board");
+    board.height = boardHeight;
+    board.width = boardWidth;
+
+    context = board.getContext("2d");
+
+    dogImg = new Image();
+    dogImg.src = "./images/sashaStand500px.png";
+    dogImg.onload = function() {
+        context.drawImage(dogImg, dog.x, dog.y, dog.width, dog.height);
+    }
+
+    obstacleTreeSmallImg = new Image();
+    obstacleTreeSmallImg.src = "./images/treestumpSmall.png";
+
+    obstacleTreeLargeImg = new Image();
+    obstacleTreeLargeImg.src = "./images/treestumpLarge.png";
+
+    obstacleCatImg = new Image();
+    obstacleCatImg.src = "./images/cat.png"
+
+    requestAnimationFrame(update);
+    setInterval(spawnObstacle, 1000);
+    document.addEventListener("keydown", dogJump);
+}
