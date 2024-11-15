@@ -39,7 +39,27 @@ let velocityY = 0;
 let gravity = .4;
 
 let gameOver = false;
+let gameStarted = false;
 let score = 0;
+
+let walkingInterval; // Variable to store the interval for walking animation
+let isWalking = false; // Track if walking animation is active
+
+// Button properties
+const buttonWidth = 150;
+const buttonHeight = 50;
+const buttonX = (boardWidth - buttonWidth) / 2; // Center horizontally
+const buttonY = (boardHeight - buttonHeight) / 2; // Center vertically
+
+function drawButton(text) {
+    context.fillStyle = "blue"; // Button background
+    context.fillRect(buttonX, buttonY, buttonWidth, buttonHeight);
+
+    context.fillStyle = "white"; // Button text
+    context.font = "20px Arial";
+    context.fillText(text, buttonX + 30, buttonY + 30); // Centered text
+}
+
 
 window.onload = function() {
     board = document.getElementById("board");
@@ -49,10 +69,28 @@ window.onload = function() {
     context = board.getContext("2d");
 
     dogImg = new Image();
-    dogImg.src = "./images/sashaStand500px.png";
+    dogImg.src = "./images/sashastand500px.png";
     dogImg.onload = function() {
         context.drawImage(dogImg, dog.x, dog.y, dog.width, dog.height);
     }
+
+    board.addEventListener("click", (event) => {
+        const rect = board.getBoundingClientRect();
+        const mouseX = event.clientX - rect.left;
+        const mouseY = event.clientY - rect.top;
+    
+        // Check if the click is within the button's boundaries
+        if (
+            mouseX >= buttonX &&
+            mouseX <= buttonX + buttonWidth &&
+            mouseY >= buttonY &&
+            mouseY <= buttonY + buttonHeight
+        ) {
+            if (!gameStarted || gameOver) {
+                startGame(); // Start or restart the game
+            }
+        }
+    });
 
     obstacleTreeSmallImg = new Image();
     obstacleTreeSmallImg.src = "./images/treestumpSmall.png";
@@ -69,49 +107,135 @@ window.onload = function() {
 }
 
 function update() {
-    requestAnimationFrame(update);
-    if (gameOver) {return;}
-    context.clearRect(0 , 0, board.width, board.height);
+    if (!gameStarted) {
+        // Draw the "Start" button
+        context.clearRect(0, 0, board.width, board.height);
+        drawButton("Start");
+        return;
+    }
 
-    //draw dog
+    if (gameOver) {
+        // Draw the "Restart" button
+        // Clear Sasha's previous position
+        context.clearRect(dog.x, dog.y, dog.width, dog.height);
+
+        // Clear obstacle positions (loop through the obstacle array)
+        for (let i = 0; i < obstacleArray.length; i++) {
+            const obstacle = obstacleArray[i];
+            context.clearRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+}
+
+        // Draw Sasha in the crying state
+        context.drawImage(dogImg, dog.x, dog.y, dog.width, dog.height);
+
+        // Draw all obstacles in their final positions
+        for (let i = 0; i < obstacleArray.length; i++) {
+            const obstacle = obstacleArray[i];
+            context.drawImage(obstacle.img, obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+        }
+
+        // Display final score
+        context.fillStyle = "black";
+        context.font = "20px courier";
+        context.fillText(`Final Score: ${score}`, 5, 20);
+
+        drawButton("Restart");
+        return;
+    }
+
+    requestAnimationFrame(update);
+    context.clearRect(0, 0, board.width, board.height);
+
+    // Apply gravity and update Sasha's position
     velocityY += gravity;
-    dog.y = Math.min(dog.y + velocityY, dogY);      //apply gravity
+    dog.y = Math.min(dog.y + velocityY, dogY);
+
+    // Handle walking or jumping state
+    if (dog.y === dogY) {
+        if (!isWalking) {
+            startWalkingAnimation();
+        }
+    } else {
+        stopWalkingAnimation();
+    }
+
+    // Draw Sasha
     context.drawImage(dogImg, dog.x, dog.y, dog.width, dog.height);
 
-    //draw obstacle
+    // Update and draw obstacles
     for (let i = 0; i < obstacleArray.length; i++) {
-        let obstacle = obstacleArray[i];
+        const obstacle = obstacleArray[i];
         obstacle.x += velocityX;
         context.drawImage(obstacle.img, obstacle.x, obstacle.y, obstacle.width, obstacle.height);
-        if (detectCollision(dog, obstacle)){
+
+        // Detect collision
+        if (detectCollision(dog, obstacle)) {
             gameOver = true;
-            dogImg.src = "./images/sashaCry500px.png";
-            dogImg.onload = function() {
-                context.drawImage(dogImg, dog.x, dog.y, dog.width, dog.height)
-            }
+            dogImg.src = "./images/sashacry500px.png";
+            return;
         }
     }
 
-    //score
+    // Update score
     context.fillStyle = "black";
     context.font = "20px courier";
     score++;
     context.fillText(score, 5, 20);
 }
 
-function dogJump(e) {
-    if (gameOver) {return;}
 
-    if ((e.code == "Space" || e.code == "ArrowUp") && dog.y == dogY) {
-        velocityY = -10;
-        dogImg.src = "./images/sashaJump500px.png";
-        dogImg.onload = function() {
-            context.drawImage(dogImg, dog.x, dog.y, dog.width, dog.height)
-        };
-    } else {
-        dogImg.src = "./images/sashaStand500px.png"
+
+function startGame() {
+    gameStarted = true;
+    gameOver = false;
+
+    // Reset game variables
+    score = 0;
+    velocityY = 0;
+    dog.y = dogY;
+    dogImg.src = "./images/sashastand500px.png"; // Reset Sasha image
+    obstacleArray = []; // Clear obstacles
+
+    // Start game loop
+    requestAnimationFrame(update);
+}
+
+
+function dogJump(e) {
+    if (gameOver) return;
+
+    // Trigger jump only if Sasha is on the ground
+    if ((e.code === "Space" || e.code === "ArrowUp") && dog.y === dogY) {
+        velocityY = -10; // Set jump velocity
+        stopWalkingAnimation(); // Stop walking animation
+        dogImg.src = "./images/sashaJump500px.png"; // Switch to jump image
     }
 }
+
+
+function startWalkingAnimation() {
+    if (isWalking) return; // Avoid multiple intervals
+    isWalking = true;
+
+    walkingInterval = setInterval(() => {
+        if (dog.y === dogY && !gameOver) { // Only switch images when Sasha is on the ground
+            if (dogImg.src.includes("sashastand500px.png")) {
+                dogImg.src = "./images/sashaWalk500px.png"; // Switch to walking image
+            } else {
+                dogImg.src = "./images/sashastand500px.png"; // Switch back to standing image
+            }
+        }
+    }, 200); // Adjust interval time for walking speed
+}
+
+function stopWalkingAnimation() {
+    clearInterval(walkingInterval);
+    isWalking = false;
+    if (dog.y === dogY && !dogImg.src.includes("sashaJump500px.png")) {
+        dogImg.src = "./images/sashastand500px.png"; // Reset to standing image when on the ground
+    }
+}
+
 
 function spawnObstacle() {
     if (gameOver) {return;}
@@ -130,12 +254,12 @@ function spawnObstacle() {
         obstacle.width = obstacleCatWidth;
         obstacleArray.push(obstacle);
     }
-    else if (obstacleSpawnRate > .70) {     //30% chance
+    else if (obstacleSpawnRate > .50) {     //30% chance
         obstacle.img = obstacleTreeLargeImg;
         obstacle.width = obstacleTreeLargeWidth;
         obstacleArray.push(obstacle);
     }
-    else if (obstacleSpawnRate > .50) {       //50% chance
+    else if (obstacleSpawnRate > .30) {       //50% chance
         obstacle.img = obstacleTreeSmallImg;
         obstacle.width = obstacleTreeSmallWidth;
         obstacleArray.push(obstacle);
