@@ -67,3 +67,48 @@ window.onload = function() {
     setInterval(spawnObstacle, 1000);
     document.addEventListener("keydown", dogJump);
 }
+
+function update() {
+    requestAnimationFrame(update);
+    if (gameOver) {return;}
+    context.clearRect(0 , 0, board.width, board.height);
+
+    //draw dog
+    velocityY += gravity;
+    dog.y = Math.min(dog.y + velocityY, dogY);      //apply gravity
+    context.drawImage(dogImg, dog.x, dog.y, dog.width, dog.height);
+
+    //draw obstacle
+    for (let i = 0; i < obstacleArray.length; i++) {
+        let obstacle = obstacleArray[i];
+        obstacle.x += velocityX;
+        context.drawImage(obstacle.img, obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+        if (detectCollision(dog, obstacle)){
+            gameOver = true;
+            dogImg.src = "./images/sashaCry500px.png";
+            dogImg.onload = function() {
+                context.drawImage(dogImg, dog.x, dog.y, dog.width, dog.height)
+            }
+        }
+    }
+
+    //score
+    context.fillStyle = "black";
+    context.font = "20px courier";
+    score++;
+    context.fillText(score, 5, 20);
+}
+
+function dogJump(e) {
+    if (gameOver) {return;}
+
+    if ((e.code == "Space" || e.code == "ArrowUp") && dog.y == dogY) {
+        velocityY = -10;
+        dogImg.src = "./images/sashaJump500px.png";
+        dogImg.onload = function() {
+            context.drawImage(dogImg, dog.x, dog.y, dog.width, dog.height)
+        };
+    } else {
+        dogImg.src = "./images/sashaStand500px.png"
+    }
+}
