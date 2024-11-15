@@ -116,7 +116,14 @@ function update() {
 
     if (gameOver) {
         // Draw the "Restart" button
-        context.clearRect(0, 0, board.width, board.height);
+        // Clear Sasha's previous position
+        context.clearRect(dog.x, dog.y, dog.width, dog.height);
+
+        // Clear obstacle positions (loop through the obstacle array)
+        for (let i = 0; i < obstacleArray.length; i++) {
+            const obstacle = obstacleArray[i];
+            context.clearRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+}
 
         // Draw Sasha in the crying state
         context.drawImage(dogImg, dog.x, dog.y, dog.width, dog.height);
