@@ -69,7 +69,7 @@ window.onload = function() {
     context = board.getContext("2d");
 
     dogImg = new Image();
-    dogImg.src = "./images/sashaStand500px.png";
+    dogImg.src = "./images/sashastand500px.png";
     dogImg.onload = function() {
         context.drawImage(dogImg, dog.x, dog.y, dog.width, dog.height);
     }
@@ -171,7 +171,7 @@ function update() {
         // Detect collision
         if (detectCollision(dog, obstacle)) {
             gameOver = true;
-            dogImg.src = "./images/sashaCry500px.png";
+            dogImg.src = "./images/sashacry500px.png";
             return;
         }
     }
@@ -193,7 +193,7 @@ function startGame() {
     score = 0;
     velocityY = 0;
     dog.y = dogY;
-    dogImg.src = "./images/sashaStand500px.png"; // Reset Sasha image
+    dogImg.src = "./images/sashastand500px.png"; // Reset Sasha image
     obstacleArray = []; // Clear obstacles
 
     // Start game loop
@@ -219,10 +219,10 @@ function startWalkingAnimation() {
 
     walkingInterval = setInterval(() => {
         if (dog.y === dogY && !gameOver) { // Only switch images when Sasha is on the ground
-            if (dogImg.src.includes("sashaStand500px.png")) {
+            if (dogImg.src.includes("sashastand500px.png")) {
                 dogImg.src = "./images/sashaWalk500px.png"; // Switch to walking image
             } else {
-                dogImg.src = "./images/sashaStand500px.png"; // Switch back to standing image
+                dogImg.src = "./images/sashastand500px.png"; // Switch back to standing image
             }
         }
     }, 200); // Adjust interval time for walking speed
@@ -232,7 +232,7 @@ function stopWalkingAnimation() {
     clearInterval(walkingInterval);
     isWalking = false;
     if (dog.y === dogY && !dogImg.src.includes("sashaJump500px.png")) {
-        dogImg.src = "./images/sashaStand500px.png"; // Reset to standing image when on the ground
+        dogImg.src = "./images/sashastand500px.png"; // Reset to standing image when on the ground
     }
 }
 
